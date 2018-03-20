@@ -16,9 +16,9 @@ X_train, X_valid, y_train, y_valid = train_test_split(X, y)
 # TODO: Define placeholders and resize operation.
 alexNet_x = tf.placeholder(tf.float32, (None, 32, 32, 3))
 alexNet_y = tf.placeholder(tf.int32, (None))
-one_hot_y = tf.one_hot(alexNet_x, 43)
+one_hot_y = tf.one_hot(alexNet_y, 43)
 
-resized_x = tf.image.resize_images(x, [227,227])
+resized_x = tf.image.resize_images(alexNet_x, [227,227])
 
 # TODO: pass placeholder as first argument to `AlexNet`.
 fc7 = AlexNet(resized_x, feature_extract=True)
@@ -47,7 +47,7 @@ training_operation = optimizer.minimize(loss_operation)
 
 correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(one_hot_y, 1))
 accuracy_operation = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-EPOCHS = 10
+EPOCHS = 1
 BATCH_SIZE = 128
 # TODO: Train and evaluate the feature extraction model.
 def evaluate(X_data, y_data):
@@ -56,7 +56,7 @@ def evaluate(X_data, y_data):
     sess = tf.get_default_session()
     for offset in range(0, num_examples, BATCH_SIZE):
         batch_x, batch_y = X_data[offset:offset+BATCH_SIZE], y_data[offset:offset+BATCH_SIZE]
-        accuracy = sess.run(accuracy_operation, feed_dict={x: batch_x, y: batch_y, keep_prob: 1})
+        accuracy = sess.run(accuracy_operation, feed_dict={alexNet_x: batch_x, alexNet_y: batch_y})
         total_accuracy += (accuracy * len(batch_x))
     return total_accuracy / num_examples
     
@@ -72,7 +72,7 @@ with tf.Session() as sess:
         for offset in range(0, num_examples, BATCH_SIZE):
             end = offset + BATCH_SIZE
             batch_x, batch_y = X_train[offset:end], y_train[offset:end]
-            sess.run(training_operation, feed_dict={x: batch_x, y: batch_y})
+            sess.run(training_operation, feed_dict={alexNet_x: batch_x, alexNet_y: batch_y})
             
         validation_accuracy = evaluate(X_valid, y_valid)
         print("EPOCH {} ...".format(i+1))
